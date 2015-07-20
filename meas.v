@@ -7,7 +7,8 @@ parameter C_IOSCNUM = 48,
 parameter C_IOSCDWIDTH = 24,
 parameter C_OIDWIDTH = 24,
 parameter C_MEMDATAWIDTH = 8,
-parameter C_MEMADDRWIDTH = 24
+parameter C_MEMADDRWIDTH = 24,
+parameter C_MEMSTADDR = 0
 )
 (
 input                               I_osc_rst,
@@ -39,13 +40,13 @@ for(i = 0;i < C_IOSCNUM;i = i + 1) begin: gen_meas_osc
     );
 end
 
-meas_mux #(.C_INUM(C_IOSCNUM), .C_IDWIDTH(C_IOSCDWIDTH), .C_ISWIDTH(?)) mux1(
+meas_mux #(.C_INUM(C_IOSCNUM), .C_IDWIDTH(C_IOSCDWIDTH), .C_ISWIDTH(C_SELWIDTH)) mux1(
     .I_data(S_osc_data),
     .I_sel(S_mux_sel_1),
     .O_data(S_mux_data_1)
 );
 
-meas_mux #(.C_INUM(C_IOSCNUM), .C_IDWIDTH(C_IOSCDWIDTH), .C_ISWIDTH(?)) mux2(
+meas_mux #(.C_INUM(C_IOSCNUM), .C_IDWIDTH(C_IOSCDWIDTH), .C_ISWIDTH(C_SELWIDTH)) mux2(
     .I_data(S_osc_data),
     .I_sel(S_mux_sel_2),
     .O_data(S_mux_data_2)
@@ -63,13 +64,13 @@ reg [2:0] _cnt_seq;
 always @(negedge I_osc_rst) begin
     _cnt_bit_num <= 0;
     _cnt_seq <= 0;
-    O_men_addr <= 0;
+    O_men_addr <= C_MEMSTADDR;
 end
 
 always @(posedge I_sclk) begin
     if (_cnt_bit_num <= C_OIDWIDTH) begin
         if (_cnt_seq == 0) begin
-            O_mem_addr <= O_mem_addr + 1;
+            /*O_mem_addr <= O_mem_addr + 1;*/
             _cnt_seq <= _cnt_seq + 1;
         end
         else if (_cnt_seq == 1) begin
