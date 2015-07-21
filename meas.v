@@ -16,8 +16,8 @@ input       [C_IOSCNUM-1:0]         I_osc,
 input                               I_sclk,
 input       [C_MEMDATAWIDTH-1:0]    I_mem_data,
 output reg  [C_MEMADDRWIDTH-1:0]    O_mem_addr,
-output reg  [C_OIDWIDTH-1:0]        O_prim_id,
-)
+output reg  [C_OIDWIDTH-1:0]        O_prim_id
+);
 
 localparam C_SELWIDTH = C_MEMDATAWIDTH;
 wire [C_IOSCNUM*C_IOSCDWIDTH-1:0]   S_osc_data;
@@ -36,7 +36,7 @@ for(i = 0;i < C_IOSCNUM;i = i + 1) begin: gen_meas_osc
     meas_osc #(.C_DWIDTH(C_IOSCDWIDTH)) m(
         .I_osc(I_osc[i]),
         .I_rst(I_osc_rst),
-        .O_data(S_osc_data[i*C_IOSCNUM+:C_IOSCDWIDTH])
+        .O_data(S_osc_data[i*C_IOSCDWIDTH+:C_IOSCDWIDTH])
     );
 end
 
@@ -58,17 +58,17 @@ meas_comp #(.C_IWIDTH(C_IOSCDWIDTH)) comp(
     .O_res(S_comp)
 );
 
-reg [clog2(C_OIDWIDTH):0] _cnt_bit_num;
+reg [10:0] _cnt_bit_num;
 reg [2:0] _cnt_seq;
 
-always @(negedge I_osc_rst) begin
-    _cnt_bit_num <= 0;
-    _cnt_seq <= 0;
-    O_men_addr <= C_MEMSTADDR;
-end
 
-always @(posedge I_sclk) begin
-    if (_cnt_bit_num <= C_OIDWIDTH) begin
+always @(posedge I_sclk or negedge I_osc_rst) begin
+    if (!I_osc_rst) begin
+        _cnt_bit_num <= 0;
+        _cnt_seq <= 0;
+        O_mem_addr <= C_MEMSTADDR;
+    end
+    else if (_cnt_bit_num < C_OIDWIDTH) begin
         if (_cnt_seq == 0) begin
             /*O_mem_addr <= O_mem_addr + 1;*/
             _cnt_seq <= _cnt_seq + 1;
