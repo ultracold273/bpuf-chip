@@ -5,14 +5,14 @@ module bch_syndrome
 #(
 parameter C_INDWIDTH = 31,
 parameter C_ERR_NUM = 4,
+parameter C_PRIM_POLY = 31'd1234,
+parameter C_PRIMPOLY_ORDER = C_INDWIDTH
 )
 (
+input											I_clk,
 input           [C_INDWIDTH-1:0]                I_codeword,
 output reg      [C_INDWIDTH*C_ERR_NUM-1:0]      O_syndromes,
-output                                          O_correct
 );
-
-reg [C_INDWIDTH*C_INDWIDTH*C_ERR_NUM-1:0]       S_matrix;
 
 localparam [C_INDWIDTH*C_INDWIDTH*C_ERR_NUM-1:0] C_TRANS_MATRIX = F_Transform(0);
 
@@ -46,22 +46,12 @@ for (i = 0;i < C_ERR_NUM;i = i + 1) begin
 end
 endfunction
 
-function integer GETASIZE;
-input integer a;
-integer i;
-begin
-    for(i=1;(2**i)<=a;i=i+1)
-      begin
-      end
-    GETASIZE = i;
-end
-endfunction
-
-integer i,j;
+genvar i,j;
 for(i = 0;i < C_ERR_NUM;i = i + 1)
 	for(j = 0;j < C_INDWIDTH; j = j + 1) begin
-		assign O_syndrome[i * C_INDWIDTH + j] = ^(C_TRANS_MATRIX[i * C_INDWIDTH * C_INDWIDTH + j * C_INDWIDTH+:C_INDWIDTH] & I_codeword);
+		always @(posedge I_clk) begin
+			O_syndromes[i * C_INDWIDTH + j] <= ^(C_TRANS_MATRIX[i * C_INDWIDTH * C_INDWIDTH + j * C_INDWIDTH+:C_INDWIDTH] & I_codeword);
+		end
 	end
 
-assign O_correct = &(~O_syndromes);
 endmodule

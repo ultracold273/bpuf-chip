@@ -16,7 +16,8 @@ input       [C_IOSCNUM-1:0]         I_osc,
 input                               I_sclk,
 input       [C_MEMDATAWIDTH-1:0]    I_mem_data,
 output reg  [C_MEMADDRWIDTH-1:0]    O_mem_addr,
-output reg  [C_OIDWIDTH-1:0]        O_prim_id
+output reg  [C_OIDWIDTH-1:0]        O_prim_id,
+output reg                          O_id_v
 );
 
 localparam C_SELWIDTH = C_MEMDATAWIDTH;
@@ -67,6 +68,7 @@ always @(posedge I_sclk or negedge I_osc_rst) begin
         _cnt_bit_num <= 0;
         _cnt_seq <= 0;
         O_mem_addr <= C_MEMSTADDR;
+        O_id_v <= 0;
     end
     else if (_cnt_bit_num < C_OIDWIDTH) begin
         if (_cnt_seq == 0) begin
@@ -92,6 +94,9 @@ always @(posedge I_sclk or negedge I_osc_rst) begin
             _cnt_seq <= 0;
             _cnt_bit_num <= _cnt_bit_num + 1;
         end
+    end
+    else if (_cnt_bit_num == C_OIDWIDTH) begin
+        O_id_v <= 1;
     end
 end
 
