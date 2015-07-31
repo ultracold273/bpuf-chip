@@ -8,15 +8,15 @@
  */
 module syn_mem
 #(
-parameter C_WORDSIZE = 8,
-parameter C_ADDRSIZE = 10
+parameter C_ADDRSIZE = 10,
+parameter C_WORDSIZE = 8
 )
 (
 input                               I_clk,
 input                               I_wen,
-input           [C_WORDSIZE-1:0]    I_wdata
+input           [C_WORDSIZE-1:0]    I_wdata,
 input           [C_ADDRSIZE-1:0]    I_addr,
-output reg      [C_WORDSIZE-1:0]    O_data,
+output          [C_WORDSIZE-1:0]    O_data
 );
 
 localparam C_MEMSIZE = (1 << C_ADDRSIZE);
@@ -29,3 +29,5 @@ always @(posedge I_clk) begin
 end
 
 assign O_data = mem[I_addr];
+
+endmodule

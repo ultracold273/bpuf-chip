@@ -15,7 +15,7 @@ parameter [`BCH_PARAM_SZ-1:0] C_P = `BCH_SANE,
 parameter C_I_DATABITS = 4,
 parameter C_I_ERRORS = 3,
 parameter C_BITS = 1,
-parameter C_O_MEMADDR = ?
+parameter C_O_MEMADDR = 0,
 parameter C_MEM_ADDR_SIZE = 10,
 parameter C_MEM_DATA_SIZE = 8
 )
@@ -25,9 +25,9 @@ input [`BCH_DATA_BITS(C_P)-1:0]     I_data,
 input                               I_start,
 input                               I_en,
 output reg [C_MEM_ADDR_SIZE-1:0]    O_mem_waddr,
-output reg [C_MEM_DATA_SIZE-1:0]    O_mem_wdata,
+output     [C_MEM_DATA_SIZE-1:0]    O_mem_wdata,
 output reg                          O_wen,
-output                              O_ready
+output reg                          O_ready
 );
 
 localparam LP_D_BITS = `BCH_DATA_BITS(C_P);
@@ -58,7 +58,7 @@ reg R_encode_start;
 always @(posedge I_clk) begin
     if (!I_en) begin
         R_encode_start <= 0;
-    end else if (S_I_start_up && R_encode_ready) begin
+    end else if (S_I_start_up && W_encode_ready) begin
         R_encode_start <= 1;
     end else begin
         R_encode_start <= 0;
@@ -70,7 +70,7 @@ always @(posedge I_clk) begin
     R_encode_ce <= I_en;
 end
 
-wire W_encode_accepted = R_encode_ready & R_encode_start;
+wire W_encode_accepted = W_encode_ready & R_encode_start;
 wire [C_BITS - 1:0] W_encode_data_in;
 assign W_encode_data_in = (W_encode_accepted)? I_data[LP_D_BITS-1-:C_BITS]:S_data_in_buf[LP_D_BITS-1-:C_BITS];
 wire [C_BITS - 1:0] W_encode_data_out;
@@ -104,15 +104,15 @@ end
 
 bch_encode #(C_P, C_BITS) u_bch_encode (
     .clk(I_clk),                              // Input
-    .start(R_encode_start && R_encode_ready), // Input
-    .ready(R_encode_ready),                   // Output
+    .start(R_encode_start && W_encode_ready), // Input
+    .ready(W_encode_ready),                   // Output
     .ce(R_encode_ce),                         // Input
-    .data_in(encode_data_in),               // Input
-    .data_out(encode_data_out),             // Output
-    .data_bits(encode_data_bits),           // Output
-    .ecc_bits(encode_ecc_bits),             // Output
-    .first(encode_first),                   // Output
-    .last(encode_last)                      // Output
+    .data_in(W_encode_data_in),               // Input
+    .data_out(W_encode_data_out),             // Output
+    .data_bits(W_encode_data_bits),           // Output
+    .ecc_bits(W_encode_ecc_bits),             // Output
+    .first(W_encode_first),                   // Output
+    .last(W_encode_last)                      // Output
 );
 
 reg R_encode_done;
@@ -132,7 +132,6 @@ always @(posedge I_clk) begin
 end
 
 reg S_mem_wr_busy;
-wire S_mem_wr_done;
 always @(posedge I_clk) begin
     if (!I_en) begin
         S_mem_wr_busy <= 0;
@@ -171,7 +170,7 @@ always @(posedge I_clk) begin
     end
 end
 
-wire S_mem_wr_done = |S_count_write_bytes;
+wire S_mem_wr_done = &S_count_write_bytes;
 
 always @(posedge I_clk) begin
     O_wen <= S_mem_wr_busy & (~S_mem_wr_done);
