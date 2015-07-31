@@ -32,7 +32,7 @@ output                              O_ready
 
 localparam LP_D_BITS = `BCH_DATA_BITS(C_P);
 localparam LP_E_BITS = `BCH_ECC_BITS(C_P);
-localparam LP_MEM_CYCLE = LP_E_BITS / MEM_WBITS;
+localparam LP_MEM_CYCLE = LP_E_BITS / C_MEM_DATA_SIZE + 1;
 
 reg S_I_start_d;
 always @(posedge I_clk) begin
@@ -151,10 +151,36 @@ always @(posedge I_clk) begin
     end
 end
 
+reg [LP_E_BITS-1:0] S_mem_data_buf;
 always @(posedge I_clk) begin
-    O_wen <= S_mem_wr_busy;
+    if (!I_en) begin
+        S_mem_data_buf <= 0;
+    end else if (S_mem_wr_busy == 1 && O_wen == 0) begin
+        S_mem_data_buf <= R_ecc_out;
+    end else if (S_mem_wr_busy && O_wen) begin
+        S_mem_data_buf <= S_mem_data_buf >> C_MEM_DATA_SIZE;
+    end
 end
 
-assign O_mem_wdata = 
+reg [LP_MEM_CYCLE-1:0] S_count_write_bytes;
+always @(posedge I_clk) begin
+    if (!I_en) begin
+        S_count_write_bytes <= 0;
+    end else if (S_mem_wr_busy) begin
+        S_count_write_bytes <= {S_count_write_bytes[LP_MEM_CYCLE-2:0], 1'b1};
+    end
+end
+
+wire S_mem_wr_done = |S_count_write_bytes;
+
+always @(posedge I_clk) begin
+    O_wen <= S_mem_wr_busy & (~S_mem_wr_done);
+end
+
+assign O_mem_wdata = S_mem_data_buf[C_MEM_DATA_SIZE-1:0];
+
+always @(posedge I_clk) begin
+    O_ready <= S_mem_wr_done;
+end
 
 endmodule
