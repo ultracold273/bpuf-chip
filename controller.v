@@ -15,6 +15,7 @@ parameter MODE_BITS = 3
 (
 input                               I_clk,
 input [MODE_BITS-1:0]               I_mode,
+input                               I_start,
 input                               I_en,
 output reg                          O_meas_rst,
 output                              O_ready
@@ -22,9 +23,12 @@ output                              O_ready
 
 localparam LP_MEAS_COUNT = 20;
 
+/* Reset Signal Generation */
 reg [LP_MEAS_COUNT-1:0] S_meas_rst_count;
 always @(posedge I_clk) begin
     if (!I_en) begin
+        S_meas_rst_count <= 0;
+    end else if (!I_start) begin
         S_meas_rst_count <= 0;
     end else begin
         S_meas_rst_count <= S_meas_rst_count + 1;
@@ -39,6 +43,8 @@ always @(posedge I_clk) begin
     end
 end
 
+always @(posedge I_clk) begin
 
+end
 
 endmodule
