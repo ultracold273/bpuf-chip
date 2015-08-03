@@ -4,11 +4,11 @@
  * Copyright 2015 - Lix Wei <ultracold273@outlook.com>
  * Encoder Module comes from Russ Dill
  *
- * Encodes the bits and save the ecc bits to outside memory
+ * Test the decoding the bits and auto-correction
  */
 
-`include "../bch_verilog/bch_defs.vh"
-//`include "../bch_verilog/bch_params.vh"
+//`include "../bch_verilog/bch_defs.vh"
+`include "../bch_verilog/bch_params.vh"
 
 module test_bch_wrapper_decode();
 localparam DATA_BITS = 5;
@@ -19,7 +19,7 @@ localparam MEM_ADDR = 4;
 localparam MEM_AD_B = 5;
 localparam MEM_DA_B = 8;
 
-localparam ERROR_DATA = 15'b111000101001101;
+localparam ERROR_DATA = 15'b111010101001101;
 
 reg clk;
 reg start;

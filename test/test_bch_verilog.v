@@ -144,7 +144,7 @@ always @(posedge clk) begin
         decode_buf <= 0;
     end else if (encode_done) begin
         decode_buf <= encode_res_buf ^ ERROR_OCR;
-    end else if (!syndrome_ready) begin
+    end else if (!syndrome_ready || syndrome_input_ready) begin
         decode_buf <= decode_buf << BITS;
     end
 end
@@ -223,10 +223,15 @@ bch_chien_counter #(BCH_PARAMS, BITS) u_chien_counter(
 	.valid(err_valid)
 );
 
+reg err_last_d;
+always @(posedge clk) begin
+    err_last_d <= err_last;
+end
+
 always @(posedge clk) begin
     if (!rst) begin
         all_done <= 0;
-    end else if (err_last || all_done) begin
+    end else if (err_last_d || all_done) begin
         all_done <= 1;
     end
 end

@@ -7,9 +7,9 @@
  * NO memory access and decode the whole codeword
  */
 
-//`include "../bch_verilog/bch_defs.vh"
-`include "../bch_verilog/bch_params.vh"
-
+//`include "../bch_verilog/log2.vh"
+//`include "../bch_verilog/bch_params.vh"
+`include "../bch_verilog/bch_defs.vh"
 module bch_wrapper_decoder
 #(
 parameter [`BCH_PARAM_SZ-1:0] C_P = `BCH_SANE,
@@ -26,6 +26,7 @@ output reg [`BCH_DATA_BITS(C_P)-1:0]    O_data,
 output reg                              O_ready
 );
 
+`include "../bch_verilog/bch.vh"
 localparam REG_RATIO = 1;
 wire syndrome_ready;
 wire syndrome_start = syndrome_input_ready && syndrome_ready;
@@ -133,6 +134,15 @@ always @(posedge I_clk) begin
 end
 
 reg [`BCH_DATA_BITS(C_P)-1:0] err_buf;
+
+always @(posedge I_clk) begin
+    if (err_first) begin
+        err_buf <= err;
+    end else if (err_valid) begin
+        err_buf <= (err_buf << C_BITS) | err;
+    end
+end
+/*
 always @(posedge I_clk) begin
     if (err_first) begin
         err_buf <= err << (`BCH_DATA_BITS(C_P) - C_BITS);
@@ -140,6 +150,8 @@ always @(posedge I_clk) begin
         err_buf <= (err << (`BCH_DATA_BITS(C_P) - C_BITS)) | (err_buf >> C_BITS);
     end
 end
+*/
+
 
 always @(posedge I_clk) begin
     if (!I_en) begin
