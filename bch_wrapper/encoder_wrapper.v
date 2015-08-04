@@ -31,6 +31,7 @@ output reg                          O_ready
 );
 
 localparam LP_D_BITS = `BCH_DATA_BITS(C_P);
+//localparam LP_D_BITS = `BCH_K(C_P);
 localparam LP_E_BITS = `BCH_ECC_BITS(C_P);
 localparam LP_MEM_CYCLE = LP_E_BITS / C_MEM_DATA_SIZE + 1;
 

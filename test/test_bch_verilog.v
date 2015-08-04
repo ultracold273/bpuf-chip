@@ -13,13 +13,13 @@ module test_bch_verilog();
 
 parameter T = 3;
 parameter OPTION = "SERIAL";
-parameter DATA_BITS = 5;
+parameter DATA_BITS = 4;
 parameter BITS = 1;
 parameter REG_RATIO = 1;
 parameter SEED = 0;
 
-parameter DATA_IN = 5'b00011;
-localparam [`BCH_CODE_BITS(BCH_PARAMS)-1:0] ERROR_OCR = 15'h3000;
+parameter DATA_IN = 4'b0011;
+localparam [`BCH_N(BCH_PARAMS)-1:0] ERROR_OCR = 15'h3000;
 
 localparam BCH_PARAMS = bch_params(DATA_BITS, T);
 

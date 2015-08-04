@@ -33,7 +33,7 @@ output reg                          O_dec_en,
 output reg                          O_dec_start,
 input                               I_dec_ready,
 // signals that indicate all have been finished
-output                              O_ready
+output reg                          O_ready
 );
 
 localparam ENCODE = 1;
@@ -73,16 +73,19 @@ end
 
 always @(posedge I_clk) begin
     if (!I_en) begin
-        O_meas_rst <= 0;
-    end else if (S_start_up || (&S_meas_rst_count)) begin
         O_meas_rst <= 1;
-    end else begin
+    end else if (S_start_up || (&S_meas_rst_count)) begin
         O_meas_rst <= 0;
+    end else begin
+        O_meas_rst <= 1;
+    end
 end
 
 reg S_meas_fin;
 always @(posedge I_clk) begin
     if (!I_en) begin
+        S_meas_fin <= 0;
+    end else if (!O_meas_rst) begin
         S_meas_fin <= 0;
     end else if (I_meas_v) begin
         S_meas_fin <= 1;
@@ -96,12 +99,16 @@ always @(posedge I_clk) begin
         O_dec_en <= 0;
         start_mode_begin <= 0;
     end else if (S_meas_fin) begin
-        if（I_mode == ENCODE) begin
+        if (I_mode == ENCODE) begin
             O_enc_en <= 1;
         end else if (I_mode == DECODE) begin
             O_dec_en <= 1;
         end
         start_mode_begin <= 1;
+    end else begin
+        O_dec_en <= 0;
+        O_enc_en <= 0;
+        start_mode_begin <= 0;
     end
 end
 
@@ -115,14 +122,21 @@ always @(posedge I_clk) begin
         end else if (I_mode == DECODE) begin
             O_dec_start <= 1;
         end
+    end else begin
+        O_enc_start <= 0;
+        O_dec_start <= 0;
     end
 end
 
 always @(posedge I_clk) begin
     if (!I_en) begin
         O_ready <= 0;
+    end else if (!S_meas_fin) begin
+        O_ready <= 0;
     end else if (I_enc_ready || I_dec_ready) begin
         O_ready <= 1;
     end
 end
+
+assign O_clk = I_clk;
 endmodule
