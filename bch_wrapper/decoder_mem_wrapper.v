@@ -31,6 +31,7 @@ output                              O_ready
 `include "../bch_verilog/bch.vh"
 localparam LP_E_BITS = `BCH_ECC_BITS(C_P);
 localparam LP_MEM_CYCLE = LP_E_BITS / C_MEM_DATA_SIZE + 1;
+localparam LP_PAD = `BCH_K(C_P) - `BCH_DATA_BITS(C_P);
 
 reg S_start_d;
 always @(posedge I_clk) begin
@@ -111,15 +112,18 @@ always @(posedge I_clk) begin
     end
 end
 
-wire [`BCH_CODE_BITS(C_P)-1:0] W_data = {I_data, R_ECC_in};
+wire [`BCH_N(C_P)-1:0] W_data = {I_data, LP_PAD(1'b0}, R_ECC_in};
+wire [`BCH_K(C_P)-1:0] W_out_data;
 
 bch_wrapper_decoder #(C_P, C_I_DATABITS, C_I_ERRORS, C_BITS) u_wrapper_dec (
     .I_clk(I_clk),
     .I_start(W_mem_rd_done),
     .I_en(R_decoder_en),
     .I_data(W_data),
-    .O_data(O_data),
+    .O_data(W_out_data),
     .O_ready(O_ready)
 );
+
+assign O_data = W_out_data[`BCH_K(C_P)-1-:`BCH_DATA_BITS(C_P)];
 
 endmodule

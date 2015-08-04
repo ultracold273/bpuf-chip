@@ -30,8 +30,8 @@ output reg                          O_wen,
 output reg                          O_ready
 );
 
-localparam LP_D_BITS = `BCH_DATA_BITS(C_P);
-//localparam LP_D_BITS = `BCH_K(C_P);
+//localparam LP_D_BITS = `BCH_DATA_BITS(C_P);
+localparam LP_D_BITS = `BCH_K(C_P);
 localparam LP_E_BITS = `BCH_ECC_BITS(C_P);
 localparam LP_MEM_CYCLE = LP_E_BITS / C_MEM_DATA_SIZE + 1;
 
@@ -75,8 +75,8 @@ wire W_encode_accepted = W_encode_ready & R_encode_start;
 wire [C_BITS - 1:0] W_encode_data_in;
 assign W_encode_data_in = (W_encode_accepted)? I_data[LP_D_BITS-1-:C_BITS]:S_data_in_buf[LP_D_BITS-1-:C_BITS];
 wire [C_BITS - 1:0] W_encode_data_out;
-
-reg [LP_D_BITS-1:0] S_data_in_buf;
+//
+reg [LP_D_BITS-1:0] S_data_inuf;
 always @(posedge I_clk) begin
     if (!I_en) begin
         S_data_in_buf <= 0;

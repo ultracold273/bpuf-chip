@@ -21,8 +21,8 @@ parameter C_BITS = 1
 input                                   I_clk,
 input                                   I_start,
 input                                   I_en,
-input [`BCH_CODE_BITS(C_P)-1:0]         I_data,
-output reg [`BCH_DATA_BITS(C_P)-1:0]    O_data,
+i(C_P)-1:0]         I_data,
+output(C_P)-1:0]    O_data,
 output reg                              O_ready
 );
 
@@ -51,7 +51,7 @@ always @(posedge I_clk) begin
     end
 end
 
-reg [`BCH_CODE_BITS(C_P)-1:0] decode_buf;
+reg [`BCH_N(C_P)-1:0] decode_buf;
 always @(posedge I_clk) begin
     if (!I_en) begin
         decode_buf <= 0;
@@ -62,7 +62,7 @@ always @(posedge I_clk) begin
     end
 end
 
-wire decode_in = decode_buf[`BCH_CODE_BITS(C_P)-1-:C_BITS];
+wire decode_in = decode_buf[`BCH_N(C_P)-1-:C_BITS];
 wire [`BCH_SYNDROMES_SZ(C_P)-1:0] syndromes;
 wire syndrome_done;
 
@@ -133,7 +133,7 @@ always @(posedge I_clk) begin
     end
 end
 
-reg [`BCH_DATA_BITS(C_P)-1:0] err_buf;
+reg [`BCH_K(C_P)-1:0] err_buf;
 
 always @(posedge I_clk) begin
     if (err_first) begin
@@ -157,7 +157,7 @@ always @(posedge I_clk) begin
     if (!I_en) begin
         O_data <= 0;
     end else if (err_last_d) begin
-        O_data <= I_data[`BCH_CODE_BITS(C_P)-1-:`BCH_DATA_BITS(C_P)] ^ err_buf;
+        O_data <= I_data[`BCH_N(C_P)-1-:`BCH_K(C_P)] ^ err_buf;
     end
 end
 endmodule
