@@ -10,7 +10,8 @@
 
 module control
 #(
-parameter MODE_BITS = 3
+parameter MODE_BITS = 3,
+parameter MEAS_COUNT = 20
 )
 (
 // Outside controller
@@ -35,7 +36,8 @@ input                               I_dec_ready,
 output                              O_ready
 );
 
-localparam LP_MEAS_COUNT = 20;
+localparam ENCODE = 1;
+localparam DECODE = 2;
 
 reg S_start_d;
 always @(posedge I_clk) begin
@@ -58,7 +60,7 @@ always @(posedge I_clk) begin
 end
 
 /* Reset Signal Generation */
-reg [LP_MEAS_COUNT-1:0] S_meas_rst_count;
+reg [MEAS_COUNT-1:0] S_meas_rst_count;
 always @(posedge I_clk) begin
     if (!I_en) begin
         S_meas_rst_count <= 0;
